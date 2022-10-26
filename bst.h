@@ -1,8 +1,8 @@
 // =================================================================
 //
 // File: bst.h
-// Author:
-// Date:
+// Author: Hossue Edgardo Ceja Cartagena 
+// Date: 25/10/2022
 //
 // =================================================================
 #ifndef BST_H
@@ -13,6 +13,8 @@
 #include <string>
 #include "exception.h"
 #include "header.h"
+
+using namespace std;
 
 template <class T> class BST;
 
@@ -267,8 +269,28 @@ void Node<T>::preOrder(std::stringstream &aux) const {
 // =================================================================
 template <class T>
 uint Node<T>::leaves() const {
-	//TO DO
-	return 0;
+	//Declaramos la variable que va a hacer el conteo de hojas
+	int hojas = 0;
+
+	//Si no existe del lado derecho ni del izquierde quiere que es un nodo sin hijo y por lo tanto es una hoja y regresamos 1
+	if (right == NULL && left == NULL){
+		return 1;
+	}
+
+	//Si del lado derecho tenemos algo (es decir que no tenemos valor nulo)
+	if (right != NULL){
+		//Regresamos la cantidad de hojas del hilo derecho aplicando recursión
+		hojas += right->leaves();
+	}
+
+	//Si del lado izquierdo tenemos algo (es decir que no tenemos valor nulo)
+	if (left != nullptr){
+		//Regresamos la cantidad de hojas del hilo derecho aplicando recursión
+		hojas += left->leaves();
+	}
+
+	//Regresamos la cantidad de hojas que hay debajo del nodo
+	return hojas;
 }
 
 // =================================================================
@@ -280,8 +302,28 @@ uint Node<T>::leaves() const {
 // =================================================================
 template <class T>
 uint Node<T>::depth() const {
-	//TO DO
-	return 0;
+	
+	int profundidad = 0;
+
+	//Usamos el método anterior. Si solo se trata de una hoja vamos a regresar 1
+	if(leaves() == 1){
+		return 1;
+	}
+	
+	//Mientras tengamos algo en el hilo derecho
+	if(right != NULL){
+		//Agregamos a la variable profundidad la profundidad del hilo derecho mas 1
+		profundidad += right->depth();
+	}
+
+	//Mientras tengamos algo en el hilo izquierdo
+	if(left != NULL){
+		//Agregamos a la variable profundidad la profundidad del hilo izquierdo mas 1
+		profundidad+= left->depth();
+	}
+
+	//Regresamos profundidad
+	return profundidad+1;
 }
 
 // =================================================================
@@ -293,7 +335,20 @@ uint Node<T>::depth() const {
 // =================================================================
 template <class T>
 bool Node<T>::isFull() const {
-	//TO DO
+
+	//Si el nodo es una hoja regresa true
+	if (left == NULL && right == NULL){
+		return true;
+	}
+	else if (left != NULL && right != NULL){
+		if (left->depth() != right->depth()){
+			return false; //Si ambos hilos no tienen la misma profundidad regresamos falso
+		}
+		else{
+			return left->isFull() && right->isFull();
+		}
+	}
+	return 0;
 	return false;
 }
 
@@ -306,8 +361,31 @@ bool Node<T>::isFull() const {
 // =================================================================
 template <class T>
 T Node<T>::ancestor(T val) const {
-	//TO DO
-	return T();
+	
+	//Si no se encuentra val en el arbol lanzamos la excepcion
+	if (find(val) != true){
+		throw(NoSuchElement());
+	}
+
+	if (left->value == val) {
+	  return value;
+	}
+	else if (right->value == val){
+		return value;
+	}
+  	else if (val < value) {
+		if (left != NULL){
+			//Aplicamos recursión
+			return (left->ancestor(val));
+		}
+	}
+	else {
+		if (right != NULL){
+			//Aplicamos recursión
+			return (right->ancestor(val));
+		}
+	}
+	return 0;
 }
 
 // =================================================================
@@ -337,6 +415,8 @@ public:
 	uint leaves() const;
 	bool isFull() const;
 	T ancestor(T) const;
+	void levelReceived(Node<T> *, stringstream &, int) const;
+	void printLevel(stringstream &) const;
 };
 
 template <class T>
@@ -490,10 +570,42 @@ std::string BST<T>::byLevel() const {
 
 	aux << "[";
 	if (!empty()) {
-		// TO DO
+		printLevel(aux);
 	}
 	aux << "]";
 	return aux.str();
+}
+
+//Recepción
+template <class T>
+void BST<T>::levelReceived(Node<T> *root, stringstream &aux, int level) const
+{
+	if(root == NULL){
+		return;
+	}
+
+
+	if (level == 1){
+		aux << root->value << " ";
+	}
+
+  	if (left != 0) {
+		levelReceived(root->left, aux, level - 1);
+	}
+
+  	if (right != 0) {
+		levelReceived(root->right,aux, level - 1);
+	}
+}
+
+//Formato de Impresión 
+template <class T>
+void BST<T>::printLevel(stringstream &aux) const
+{
+	int level = root->depth();
+  	for(int i = 0; i < level; i++){
+			levelReceived(root, aux, i);
+	}
 }
 
 // =================================================================
